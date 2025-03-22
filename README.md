@@ -1,0 +1,1 @@
+# nimso_namespace
