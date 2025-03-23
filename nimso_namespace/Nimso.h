@@ -26,7 +26,7 @@ namespace Nimso {
         template <typename... Args>
         DoublyNode(Args&&... args) : m_data(std::forward<Args>(args)...) {}
     };
-
+    
     template <typename T>
     class Queue {
     private:
@@ -55,13 +55,13 @@ namespace Nimso {
         size_t size() const {
             return m_size;
         }
-        T front() const {
+        T& front() const {
             return m_front->m_data;
         }
-        T back() const {
+        T& back() const {
             return m_back->m_data;
         }
-        void push(T& val) {
+        void push(const T& val) {
             Node<T>* newNode = new Node<T>(val);
 
             if (m_size == 0) {
@@ -90,7 +90,7 @@ namespace Nimso {
 
             m_size++;
         }
-        T pop() {
+        T& pop() {
             if (m_size == 0) {
                 throw std::runtime_error("Nothing to pop from the Queue!");
             }
@@ -125,7 +125,7 @@ namespace Nimso {
         }
         friend std::ostream& operator<<(std::ostream& os, Queue<T>& q) {
             os << "F [";
-            if (q.m_front) {
+            if (q.m_size != 0) {
                 Node<T>* curr = q.m_front;
                 do {
                     os << curr->m_data;
@@ -139,6 +139,113 @@ namespace Nimso {
                 } while (curr);
             }
             os << "] B";
+            return os;
+        }
+    };
+
+    template <typename T>
+    class Stack {
+    private:
+        size_t m_size;
+        Node<T>* m_top;
+    public:
+        Stack() : m_size(0), m_top(nullptr) {};
+        ~Stack() {
+            if (m_size == 0) {
+                return;
+            }
+
+            Node<T>* curr = m_top;
+            while (curr->m_next) {
+                curr = curr->m_next;
+                m_top->m_next = nullptr;
+                delete m_top;
+                m_top = curr;
+            }
+            delete curr;
+        }
+        bool isEmpty() const {
+            return m_size == 0;
+        }
+        size_t size() const {
+            return m_size;
+        }
+        T& top() const {
+            return m_top->m_data;
+        }
+        void push(const T& value) {
+            Node<T>* newNode = new Node<T>(value);
+
+            if (m_size == 0) {
+                m_top = newNode;
+            }
+            else {
+                newNode->m_next = m_top;
+                m_top = newNode;
+            }
+
+            m_size++;
+        }
+        template <typename... Args>
+        void emplace(Args&&... args) {
+            Node<T>* newNode = new Node<T>(std::forward<Args>(args)...);
+
+            if (m_size == 0) {
+                m_top = newNode;
+            }
+            else {
+                newNode->m_next = m_top;
+                m_top = newNode;
+            }
+
+            m_size++;
+        }
+        T& pop() {
+            if (m_size == 0) {
+                throw std::runtime_error("Nothing to pop from the Stack!");
+            }
+
+            T r = m_top->m_data;
+
+            if (!(m_top->m_next)) {
+                delete m_top;
+            }
+            else {
+                Node<T>* temp = m_top;
+                m_top = m_top->m_next;
+                temp->m_next = nullptr;
+                delete temp;
+            }
+            m_size--;
+
+            return r;
+        }
+        void swap(Stack<T>& other) {
+            if (this != &other && (this->m_size > 0 || other.m_size > 0)) {
+                Node<T>* tempnode = this->m_top;
+                this->m_top = other.m_top;
+                other.m_top = tempnode;
+                size_t tempsizet = this->m_size;
+                this->m_size = other.m_size;
+                other.m_size = tempsizet;
+            }
+        }
+        friend std::ostream& operator<<(std::ostream& os, Stack<T>& stk) {
+            os << "Top [";
+            if (stk.m_size != 0) {
+                Node<T>* curr = stk.m_top;
+                do {
+                    os << curr->m_data;
+                    if (curr->m_next) {
+                        os << ", ";
+                        curr = curr->m_next;
+                    }
+                    else {
+                        curr = nullptr;
+                    }
+                } while (curr);
+            }
+            os << "] Bottom";
             return os;
         }
     };
@@ -172,13 +279,13 @@ namespace Nimso {
         size_t size() const {
             return m_size;
         }
-        T head() const {
+        T& head() const {
             return m_head->m_data;
         }
-        T tail() const {
+        T& tail() const {
             return m_tail->m_data;
         }
-        void push(T& value) {
+        void push(const T& value) {
             DoublyNode<T>* newNode = new DoublyNode<T>(value);
 
             if (!m_head) {
@@ -193,7 +300,7 @@ namespace Nimso {
 
             m_size++;
         }
-        void pushBack(T& value) {
+        void pushBack(const T& value) {
             DoublyNode<T>* newNode = new DoublyNode<T>(value);
 
             if (!m_head) {
@@ -240,7 +347,7 @@ namespace Nimso {
 
             m_size++;
         }
-        T pop() {
+        T& pop() {
             if (m_size == 0) {
                 throw std::runtime_error("Nothing to pop from the Linked List!");
             }
@@ -260,7 +367,7 @@ namespace Nimso {
             m_size--;
             return r;
         }
-        T popBack() {
+        T& popBack() {
             if (m_size == 0) {
                 throw std::runtime_error("Nothing to pop from the Linked List!");
             }
@@ -484,7 +591,7 @@ namespace Nimso {
         }
         friend std::ostream& operator<<(std::ostream& os, DoublyLinkedList<T>& LL) {
             os << '[';
-            if (LL.m_head) {
+            if (LL.m_size != 0) {
                 DoublyNode<T>* curr = LL.m_head;
                 do {
                     os << curr->m_data;
