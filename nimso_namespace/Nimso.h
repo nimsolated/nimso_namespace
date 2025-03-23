@@ -2,7 +2,51 @@
 #include <iostream>
 
 namespace Nimso {
-    enum s_InsertionRules { INSERT_BEFORE = 0, INSERT_AFTER };
+    enum e_InsertionRules { INSERT_BEFORE = 0, INSERT_AFTER = 1 };
+
+    enum e_ErrorState { ERROR_FAIL = -1, ERROR_PASS = 0 };
+
+    class TowerOfHanoi {
+    private:
+        size_t m_numMoves;
+    public:
+        TowerOfHanoi() : m_numMoves(0) {};
+        TowerOfHanoi(TowerOfHanoi& other) : m_numMoves(0) {
+            try {
+                if (this == &other) {
+                    throw std::runtime_error("Self Referense in TowerOfHanoi's copy constructor!");
+                }
+            }
+            catch (std::runtime_error& e) {
+                std::cout << e.what() << std::endl;
+                return;
+            }
+
+            this->m_numMoves = other.m_numMoves;
+        }
+        ~TowerOfHanoi() = default;
+        
+        void resetNumMoves() {
+            m_numMoves = 0;
+        }
+        size_t getNumMoves() const {
+            return m_numMoves;
+        }
+        void start(size_t n, char src, char dest, char aux) {
+            m_numMoves++;
+
+            if (n == 1) {
+                std::cout << "Move disk 1 from " << src
+                    << " to " << dest << std::endl;
+                return;
+            }
+
+            start(n - 1, src, aux, dest);
+            std::cout << "Move disk " << n << " from " << src
+                << " to " << dest << std::endl;
+            start(n - 1, aux, dest, src);
+        }
+    };
 
     template <typename Variant>
     struct Node {
@@ -110,8 +154,18 @@ namespace Nimso {
 
             return r;
         }
-        void swap(Queue<T>& other) noexcept {
-            if (this != &other && (this->m_size > 0 || other.m_size > 0)) {
+        e_ErrorState swap(Queue<T>& other) noexcept {
+            try {
+                if (this == &other) {
+                    throw std::runtime_error("A Queue can't self-swap!");
+                }
+            }
+            catch (std::runtime_error& e) {
+                std::cout << e.what() << std::endl;
+                return ERROR_FAIL;
+            }
+
+            if (this->m_size > 0 || other.m_size > 0) {
                 Node<T>* tempnode = this->m_front;
                 this->m_front = other.m_front;
                 other.m_front = tempnode;
@@ -121,7 +175,10 @@ namespace Nimso {
                 size_t tempsizet = this->m_size;
                 this->m_size = other.m_size;
                 other.m_size = tempsizet;
+                return ERROR_PASS;
             }
+
+            return ERROR_FAIL;
         }
         friend std::ostream& operator<<(std::ostream& os, Queue<T>& q) {
             os << "F [";
@@ -220,15 +277,28 @@ namespace Nimso {
 
             return r;
         }
-        void swap(Stack<T>& other) {
-            if (this != &other && (this->m_size > 0 || other.m_size > 0)) {
+        e_ErrorState swap(Stack<T>& other) {
+            try {
+                if (this == &other) {
+                    throw std::runtime_error("A Stack can't self-swap!");
+                }
+            }
+            catch (std::runtime_error& e) {
+                std::cout << e.what() << std::endl;
+                return ERROR_FAIL;
+            }
+
+            if (this->m_size > 0 || other.m_size > 0) {
                 Node<T>* tempnode = this->m_top;
                 this->m_top = other.m_top;
                 other.m_top = tempnode;
                 size_t tempsizet = this->m_size;
                 this->m_size = other.m_size;
                 other.m_size = tempsizet;
+                return ERROR_PASS;
             }
+
+            return ERROR_FAIL;
         }
         friend std::ostream& operator<<(std::ostream& os, Stack<T>& stk) {
             os << "Top [";
@@ -434,9 +504,9 @@ namespace Nimso {
 
             return -1;
         }
-        bool findInsert(const T& targetData, const T& dataToInsert, s_InsertionRules rule = INSERT_AFTER) {
+        e_ErrorState findInsert(const T& targetData, const T& dataToInsert, e_InsertionRules rule = INSERT_AFTER) {
             if (m_size == 0) {
-                return false;
+                return ERROR_FAIL;
             }
 
             DoublyNode<T>* newNode = new DoublyNode<T>(dataToInsert);
@@ -454,7 +524,7 @@ namespace Nimso {
                     m_head = newNode;
                 }
                 m_size++;
-                return true;
+                return ERROR_PASS;
             }
             else if (m_tail->m_data == targetData) {
                 if (rule == INSERT_AFTER) {
@@ -469,7 +539,7 @@ namespace Nimso {
                     m_tail->m_prev = newNode;
                 }
                 m_size++;
-                return true;
+                return ERROR_PASS;
             }
 
             DoublyNode<T>* curr = m_head;
@@ -489,7 +559,7 @@ namespace Nimso {
                         curr->m_prev = newNode;
                     }
                     m_size++;
-                    return true;
+                    return ERROR_PASS;
                 }
             }
 
@@ -497,11 +567,11 @@ namespace Nimso {
                 delete newNode;
             }
 
-            return false;
+            return ERROR_FAIL;
         }
-        bool findDelete(const T& targetData) {
+        e_ErrorState findDelete(const T& targetData) {
             if (m_size == 0) {
-                return false;
+                return ERROR_FAIL;
             }
 
             if (m_head->m_data == targetData) {
@@ -516,7 +586,7 @@ namespace Nimso {
                     delete tempnode;
                 }
                 m_size--;
-                return true;
+                return ERROR_PASS;
             }
             else if (m_tail->m_data == targetData) {
                 if (m_tail == m_head) {
@@ -530,7 +600,7 @@ namespace Nimso {
                     delete tempnode;
                 }
                 m_size--;
-                return true;
+                return ERROR_PASS;
             }
 
             DoublyNode<T>* curr = m_head;
@@ -545,24 +615,24 @@ namespace Nimso {
                     curr->m_prev = nullptr;
                     delete curr;
                     m_size--;
-                    return true;
+                    return ERROR_PASS;
                 }
             }
 
-            return false;
+            return ERROR_FAIL;
         }
-        bool findReplace(const T& targetData, const T& replacementData) {
+        e_ErrorState findReplace(const T& targetData, const T& replacementData) {
             if (m_size == 0) {
-                return false;
+                return ERROR_FAIL;
             }
 
             if (m_head->m_data == targetData) {
                 m_head->m_data = replacementData;
-                return true;
+                return ERROR_PASS;
             }
             else if (m_tail->m_data == targetData) {
                 m_tail->m_data = replacementData;
-                return true;
+                return ERROR_PASS;
             }
 
             DoublyNode<T>* curr = m_head;
@@ -570,14 +640,24 @@ namespace Nimso {
                 curr = curr->m_next;
                 if (curr->m_data == targetData) {
                     curr->m_data = replacementData;
-                    return true;
+                    return ERROR_PASS;
                 }
             }
 
-            return false;
+            return ERROR_FAIL;
         }
-        void swap(DoublyLinkedList<T>& other) {
-            if (this != &other && (this->m_size > 0 || other.m_size > 0)) {
+        e_ErrorState swap(DoublyLinkedList<T>& other) {
+            try {
+                if (this == &other) {
+                    throw std::runtime_error("A DoublyLinkedList can't self-swap!");
+                }
+            }
+            catch (std::runtime_error& e) {
+                std::cout << e.what() << std::endl;
+                return ERROR_FAIL;
+            }
+
+            if (this->m_size > 0 || other.m_size > 0) {
                 DoublyNode<T>* tempnode = this->m_head;
                 this->m_head = other.m_head;
                 other.m_head = tempnode;
@@ -587,7 +667,10 @@ namespace Nimso {
                 size_t tempsizet = this->m_size;
                 this->m_size = other.m_size;
                 other.m_size = tempsizet;
+                return ERROR_PASS;
             }
+
+            return ERROR_FAIL;
         }
         friend std::ostream& operator<<(std::ostream& os, DoublyLinkedList<T>& LL) {
             os << '[';

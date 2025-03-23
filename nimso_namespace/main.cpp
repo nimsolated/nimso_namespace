@@ -2,44 +2,37 @@
 
 int main()
 {
-	Nimso::Stack<char> stk;
+	Nimso::TowerOfHanoi toh;
+	std::cout << toh.getNumMoves() << std::endl;
+	toh.start(4, 'A', 'C', 'B');
+	std::cout << toh.getNumMoves() << std::endl;
+	Nimso::TowerOfHanoi toh2(toh);
+	std::cout << toh2.getNumMoves() << std::endl;
+	toh.resetNumMoves();
+	std::cout << toh.getNumMoves() << std::endl;
+	std::cout << toh2.getNumMoves() << std::endl;
 
-	std::cout << stk << std::endl;
-	std::cout << "Stack is empty: " << stk.isEmpty() << std::endl;
-	std::cout << "Stack's size: " << stk.size() << std::endl;
-
-	char c = 'N';
-	char exclamation = '!';
-	stk.push(c); stk.emplace('i'); stk.emplace('m'); stk.push(exclamation);
-
-	std::cout << stk << std::endl;
-	std::cout << "Stack is empty: " << stk.isEmpty() << std::endl;
-	std::cout << "Stack's size: " << stk.size() << std::endl;
-
-	char* charray = new char[5];
-
-	size_t pos = 0;
-	while (!stk.isEmpty()) {
-		charray[pos] = stk.pop();
-		pos++;
-	}
-	charray[4] = '\0';
-
-	std::cout << stk << std::endl;
-	std::cout << "Stack is empty: " << stk.isEmpty() << std::endl;
-	std::cout << "Stack's size: " << stk.size() << std::endl;
-
-	std::string reversedNim(charray);
-	std::cout << "Nim in reverse: " << reversedNim;
-	std::cout << std::endl;
-
+	Nimso::Stack<char> stk1;
 	Nimso::Stack<char> stk2;
-	stk.emplace('y'); stk.emplace('e'); stk.emplace('s');
-	stk2.emplace('n'); stk2.emplace('o');
-	stk.swap(stk2);
-
-	std::cout << stk << std::endl;
-	std::cout << stk2 << std::endl;
-
-	delete[] charray;
+	std::cout << "stk1 size: " << stk1.size() << std::endl;
+	std::cout << "stk2 size: " << stk2.size() << std::endl;
+	if (stk1.swap(stk2) == Nimso::ERROR_PASS) {
+		std::cout << "Good swap.\n";
+	}
+	else {
+		std::cout << "Bad swap.\n";
+	}
+	stk1.emplace('A'); stk1.emplace('B');
+	stk2.emplace('C'); stk2.emplace('D'); stk2.emplace('E');
+	std::cout << "stk1 size: " << stk1.size() << std::endl;
+	std::cout << "stk2 size: " << stk2.size() << std::endl;
+	if (stk1.swap(stk2) == Nimso::ERROR_PASS) {
+		std::cout << "Good swap.\n";
+	}
+	else {
+		std::cout << "Bad swap.\n";
+	}
+	if (stk1.swap(stk1) == Nimso::ERROR_FAIL) {
+		std::cout << "Bad swap. (self-reference)\n";
+	}
 }
