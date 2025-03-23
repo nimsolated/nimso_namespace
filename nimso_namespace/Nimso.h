@@ -2,7 +2,7 @@
 #include <iostream>
 #include <unordered_map>
 
-namespace Nimso {
+namespace nimso {
     enum e_InsertionRules { INSERT_BEFORE = 0, INSERT_AFTER = 1 };
 
     enum e_ErrorState { ERROR_FAIL = -1, ERROR_PASS = 0 };
