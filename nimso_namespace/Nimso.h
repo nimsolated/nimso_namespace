@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <unordered_map>
 
 namespace Nimso {
     enum e_InsertionRules { INSERT_BEFORE = 0, INSERT_AFTER = 1 };
@@ -11,7 +12,7 @@ namespace Nimso {
         size_t m_numMoves;
     public:
         TowerOfHanoi() : m_numMoves(0) {};
-        TowerOfHanoi(TowerOfHanoi& other) : m_numMoves(0) {
+        TowerOfHanoi(const TowerOfHanoi& other) : TowerOfHanoi() {
             try {
                 if (this == &other) {
                     throw std::runtime_error("Self Referense in TowerOfHanoi's copy constructor!");
@@ -79,6 +80,28 @@ namespace Nimso {
         Node<T>* m_back;
     public:
         Queue() : m_size(0), m_front(nullptr), m_back(nullptr) {};
+        Queue(const Queue<T>& other) : Queue() {
+            try {
+                if (this == &other) {
+                    throw std::runtime_error("Self Referense in Queue's copy constructor!");
+                }
+            }
+            catch (std::runtime_error& e) {
+                std::cout << e.what() << std::endl;
+                return;
+            }
+
+            if (other.m_size == 0) {
+                return;
+            }
+
+            Node<T>* curr = other.m_front;
+            this->push(curr->m_data);
+            while (curr->m_next) {
+                curr = curr->m_next;
+                this->push(curr->m_data);
+            }
+        }
         ~Queue() {
             if (m_size == 0) {
                 return;
@@ -134,7 +157,7 @@ namespace Nimso {
 
             m_size++;
         }
-        T& pop() {
+        T pop() {
             if (m_size == 0) {
                 throw std::runtime_error("Nothing to pop from the Queue!");
             }
@@ -257,7 +280,7 @@ namespace Nimso {
 
             m_size++;
         }
-        T& pop() {
+        T pop() {
             if (m_size == 0) {
                 throw std::runtime_error("Nothing to pop from the Stack!");
             }
@@ -417,7 +440,7 @@ namespace Nimso {
 
             m_size++;
         }
-        T& pop() {
+        T pop() {
             if (m_size == 0) {
                 throw std::runtime_error("Nothing to pop from the Linked List!");
             }
@@ -437,7 +460,7 @@ namespace Nimso {
             m_size--;
             return r;
         }
-        T& popBack() {
+        T popBack() {
             if (m_size == 0) {
                 throw std::runtime_error("Nothing to pop from the Linked List!");
             }
@@ -688,6 +711,77 @@ namespace Nimso {
                 } while (curr);
             }
             os << ']';
+            return os;
+        }
+    };
+
+    class PostfixExpression {
+    private:
+        Queue<char> m_expression;
+        bool isOperator(char c) {
+            return c == '(' || c == '+' || c == '-' || c == '*' || c == '/' || c == '^';
+        }
+        short precedence(char op) {
+            std::unordered_map<char, short> precedence_map = {
+                {'+', 1}, {'-', 1},
+                {'*', 2}, {'/', 2},
+                {'^', 3}
+            };
+            return precedence_map[op];
+        }
+    public:
+        PostfixExpression(const char*& fromInfix) : m_expression(Queue<char>()) {
+            try {
+                Stack<char> stack;
+                for (size_t i = 0; i < strlen(fromInfix); i++) {
+                    if (isOperator(fromInfix[i])) {
+                        if (stack.isEmpty() || fromInfix[i] == '(') {
+                            stack.push(fromInfix[i]);
+                        }
+                        else if (precedence(fromInfix[i]) > precedence(stack.top())) {
+                            stack.push(fromInfix[i]);
+                        }
+                        else {
+                            m_expression.push(stack.pop());
+                            i--;
+                        }
+                    }
+                    else if (fromInfix[i] == ')') {
+                        while (!stack.isEmpty()) {
+                            m_expression.push(stack.pop());
+                            if (stack.top() == '(') {
+                                stack.pop();
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        m_expression.push(fromInfix[i]);
+                    }
+                }
+                while (!stack.isEmpty()) {
+                    m_expression.push(stack.pop());
+                }
+            }
+            catch (...) {
+                std::cout << "PostfixExpression: Unknown error with converting infix to postfix. Did you pass in the correct charraySize?" << std::endl;
+                return;
+            }
+        }
+        Queue<char> getExpression() const {
+            return m_expression;
+        }
+        friend std::ostream& operator<<(std::ostream& os, PostfixExpression& pe) {
+            if (pe.m_expression.size() == 0) {
+                return os;
+            }
+
+            Queue<char> temp(pe.m_expression);
+
+            os << "Postfix Expression: ";
+            while (!temp.isEmpty()) {
+                os << temp.pop();
+            }
             return os;
         }
     };
