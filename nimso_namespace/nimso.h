@@ -55,7 +55,8 @@ namespace nimso {
         Variant m_data;
 
         Node() = default;
-        Node(Variant data) : m_data(data) {}
+        Node(const Variant& data) : m_data(data) {}
+        Node(Variant&& data) : m_data(data) {}
         template <typename... Args>
         Node(Args&&... args) : m_data(std::forward<Args>(args)...) {}
     };
@@ -67,7 +68,8 @@ namespace nimso {
         Variant m_data;
 
         DoublyNode() = default;
-        DoublyNode(Variant data) : m_data(data) {}
+        DoublyNode(const Variant& data) : m_data(data) {}
+        DoublyNode(Variant&& data) : m_data(data) {}
         template <typename... Args>
         DoublyNode(Args&&... args) : m_data(std::forward<Args>(args)...) {}
     };
