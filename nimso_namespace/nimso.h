@@ -346,6 +346,376 @@ namespace nimso {
     };
     
     template <typename T>
+    class SinglyLinkedList {
+    private:
+        size_t m_size;
+        Node<T>* m_head;
+        Node<T>* m_tail;
+    public:
+        SinglyLinkedList() : m_size(0), m_head(nullptr), m_tail(nullptr) {};
+        ~SinglyLinkedList() {
+            if (m_size == 0) {
+                return;
+            }
+
+            Node<T>* curr = m_head;
+            while (curr->m_next) {
+                curr = curr->m_next;
+                m_head->m_next = nullptr;
+                delete m_head;
+                m_head = curr;
+            }
+            delete curr;
+        }
+        bool isEmpty() const {
+            return m_size == 0;
+        }
+        size_t size() const {
+            return m_size;
+        }
+        T& head() const {
+            return m_head->m_data;
+        }
+        T& tail() const {
+            return m_tail->m_data;
+        }
+        void push(const T& value) {
+            Node<T>* newNode = new Node<T>(value);
+
+            if (m_size == 0) {
+                m_head = newNode;
+                m_tail = newNode;
+            }
+            else {
+                newNode->m_next = m_head;
+                m_head = newNode;
+            }
+
+            m_size++;
+        }
+        void pushBack(const T& value) {
+            Node<T>* newNode = new Node<T>(value);
+
+            if (m_size == 0) {
+                m_head = newNode;
+                m_tail = newNode;
+            }
+            else {
+                m_tail->m_next = newNode;
+                m_tail = newNode;
+            }
+
+            m_size++;
+        }
+        template <typename... Args>
+        void emplace(Args&&... args) {
+            Node<T>* newNode = new Node<T>(std::forward<Args>(args)...);
+
+            if (m_size == 0) {
+                m_head = newNode;
+                m_tail = newNode;
+            }
+            else {
+                newNode->m_next = m_head;
+                m_head = newNode;
+            }
+
+            m_size++;
+        }
+        template <typename... Args>
+        void emplaceBack(Args&&... args) {
+            Node<T>* newNode = new Node<T>(std::forward<Args>(args)...);
+
+            if (m_size == 0) {
+                m_head = newNode;
+                m_tail = newNode;
+            }
+            else {
+                m_tail->m_next = newNode;
+                m_tail = newNode;
+            }
+
+            m_size++;
+        }
+        T pop() {
+            if (m_size == 0) {
+                throw std::runtime_error("Nothing to pop from the Linked List!");
+            }
+
+            T r = m_head->m_data;
+
+            if (m_head == m_tail) {
+                delete m_head;
+                m_head = nullptr;
+                m_tail = nullptr;
+            }
+            else {
+                Node<T>* temp = m_head;
+                m_head = m_head->m_next;
+                temp->m_next = nullptr;
+                delete temp;
+            }
+
+            m_size--;
+            return r;
+        }
+        T popBack() {
+            if (m_size == 0) {
+                throw std::runtime_error("Nothing to pop from the Linked List!");
+            }
+
+            T r = m_tail->m_data;
+
+            if (m_head == m_tail) {
+                delete m_head;
+                m_head = nullptr;
+                m_tail = nullptr;
+            }
+            else {
+                Node<T>* curr = m_head;
+                while (curr->m_next != m_tail) {
+                    curr = curr->m_next;
+                }
+                curr->m_next = nullptr;
+                delete m_tail;
+                m_tail = curr;
+            }
+
+            m_size--;
+            return r;
+        }
+        bool find(const T& targetData) {
+            if (m_size == 0) {
+                return false;
+            }
+
+            if (m_head->m_data == targetData) {
+                return true;
+            }
+            else if (m_tail->m_data == targetData) {
+                return true;
+            }
+
+            Node<T>* curr = m_head;
+            while (curr->m_next && curr->m_next != m_tail) {
+                curr = curr->m_next;
+                if (curr->m_data == targetData) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        long long int findPos(const T& targetData) {
+            if (m_size == 0) {
+                return -1;
+            }
+
+            if (m_head->m_data == targetData) {
+                return 0;
+            }
+            else if (m_tail->m_data == targetData) {
+                return m_size - 1;
+            }
+
+            Node<T>* curr = m_head;
+            long long int pos = 0;
+            while (curr->m_next && curr->m_next != m_tail) {
+                curr = curr->m_next;
+                pos++;
+                if (curr->m_data == targetData) {
+                    return pos;
+                }
+            }
+
+            return -1;
+        }
+        e_ErrorState findInsert(const T& targetData, const T& dataToInsert, e_InsertionRules rule = INSERT_AFTER) {
+            if (m_size == 0) {
+                return ERROR_FAIL;
+            }
+
+            if (m_head == m_tail) {
+                if (m_head->m_data != targetData) {
+                    return ERROR_FAIL;
+                }
+
+                Node<T>* newNode = new Node<T>(dataToInsert);
+                if (rule == INSERT_AFTER) {
+                    m_tail = newNode;
+                    m_head->m_next = m_tail;
+                    m_size++;
+                    return ERROR_PASS;
+                }
+                else if (rule == INSERT_BEFORE) {
+                    newNode->m_next = m_head;
+                    m_head = newNode;
+                    m_size++;
+                    return ERROR_PASS;
+                }
+                else {
+                    delete newNode;
+                }
+            }
+            else {
+                Node<T>* curr = m_head;
+
+                Node<T>* newNode = new Node<T>(dataToInsert);
+                if (curr->m_data == targetData) {
+                    if (rule == INSERT_AFTER) {
+                        newNode->m_next = m_head->m_next;
+                        m_head->m_next = newNode;
+                        m_size++;
+                        return ERROR_PASS;
+                    }
+                    else if (rule == INSERT_BEFORE) {
+                        newNode->m_next = m_head;
+                        m_head = newNode;
+                        m_size++;
+                        return ERROR_PASS;
+                    }
+                }
+
+                while (curr->m_next) {
+                    Node<T>* temp = curr;
+                    curr = curr->m_next;
+                    if (curr->m_data != targetData) {
+                        continue;
+                    }
+
+                    if (rule == INSERT_AFTER) {
+                        newNode->m_next = temp->m_next->m_next;
+                        curr->m_next = newNode;
+                        if (curr == m_tail) {
+                            m_tail = newNode;
+                        }
+                        m_size++;
+                        return ERROR_PASS;
+                    }
+                    else if (rule == INSERT_BEFORE) {
+                        newNode->m_next = curr;
+                        temp->m_next = newNode;
+                        m_size++;
+                        return ERROR_PASS;
+                    }
+                }
+
+                delete newNode;
+            }
+
+            return ERROR_FAIL;
+        }
+        e_ErrorState findDelete(const T& targetData) {
+            if (m_size == 0) {
+                return ERROR_FAIL;
+            }
+
+            if (m_head == m_tail) {
+                if (m_head->m_data != targetData) {
+                    return ERROR_FAIL;
+                }
+
+                delete m_head;
+                m_head = nullptr;
+                m_tail = nullptr;
+                m_size--;
+                return ERROR_PASS;
+            }
+            else {
+                Node<T>* curr = m_head;
+
+                if (curr->m_data == targetData) {
+                    m_head = m_head->m_next;
+                    curr->m_next = nullptr;
+                    delete curr;
+                    m_size--;
+                    return ERROR_PASS;
+                }
+
+                while (curr->m_next) {
+                    Node<T>* temp = curr;
+                    curr = curr->m_next;
+                    if (curr->m_data != targetData) {
+                        continue;
+                    }
+
+                    temp->m_next = temp->m_next->m_next;
+                    curr->m_next = nullptr;
+                    if (curr == m_tail) {
+                        m_tail = temp;
+                    }
+                    delete curr;
+                    m_size--;
+                    return ERROR_PASS;
+                }
+            }
+
+            return ERROR_FAIL;
+        }
+        e_ErrorState findReplace(const T& targetData, const T& replacementData) {
+            if (m_size == 0) {
+                return ERROR_FAIL;
+            }
+
+            if (m_head->m_data == targetData) {
+                m_head->m_data = replacementData;
+                return ERROR_PASS;
+            }
+            else if (m_tail->m_data == targetData) {
+                m_tail->m_data = replacementData;
+                return ERROR_PASS;
+            }
+
+            Node<T>* curr = m_head;
+            while (curr->m_next && curr->m_next != m_tail) {
+                curr = curr->m_next;
+                if (curr->m_data == targetData) {
+                    curr->m_data = replacementData;
+                    return ERROR_PASS;
+                }
+            }
+
+            return ERROR_FAIL;
+        }
+        e_ErrorState swap(SinglyLinkedList<T>& other) {
+            try {
+                if (this == &other) {
+                    throw std::runtime_error("A DoublyLinkedList can't self-swap!");
+                }
+            }
+            catch (std::runtime_error& e) {
+                std::cout << e.what() << std::endl;
+                return ERROR_FAIL;
+            }
+
+            if (this->m_size > 0 || other.m_size > 0) {
+                // TODO: swap
+                return ERROR_PASS;
+            }
+
+            return ERROR_FAIL;
+        }
+        friend std::ostream& operator<<(std::ostream& os, SinglyLinkedList<T>& LL) {
+            os << '[';
+            if (LL.m_size != 0) {
+                Node<T>* curr = LL.m_head;
+                do {
+                    os << curr->m_data;
+                    if (curr->m_next) {
+                        os << ", ";
+                        curr = curr->m_next;
+                    }
+                    else {
+                        curr = nullptr;
+                    }
+                } while (curr);
+            }
+            os << ']';
+            return os;
+        }
+    };
+    
+    template <typename T>
     class DoublyLinkedList {
     private:
         size_t m_size;
@@ -518,7 +888,7 @@ namespace nimso {
             }
 
             DoublyNode<T>* curr = m_head;
-            size_t pos = 0;
+            long long int pos = 0;
             while (curr->m_next && curr->m_next != m_tail) {
                 curr = curr->m_next;
                 pos++;
@@ -632,8 +1002,6 @@ namespace nimso {
             while (curr->m_next && curr->m_next != m_tail) {
                 curr = curr->m_next;
                 if (curr->m_data == targetData) {
-                    curr->m_prev->m_next;
-                    curr->m_next;
                     curr->m_prev->m_next = curr->m_next;
                     curr->m_next->m_prev = curr->m_prev;
                     curr->m_next = nullptr;
