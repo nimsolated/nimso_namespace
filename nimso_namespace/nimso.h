@@ -689,7 +689,12 @@ namespace nimso {
             }
 
             if (this->m_size > 0 || other.m_size > 0) {
-                // TODO: swap
+                Node<T>* tempnode = this->m_head;
+                this->m_head = other.m_head;
+                other.m_head = tempnode;
+                size_t tempsizet = this->m_size;
+                this->m_size = other.m_size;
+                other.m_size = tempsizet;
                 return ERROR_PASS;
             }
 
