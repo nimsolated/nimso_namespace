@@ -700,6 +700,35 @@ namespace nimso {
 
             return ERROR_FAIL;
         }
+        e_ErrorState swapEnds() {
+            if (m_size == 0 || m_head == m_tail) {
+                return ERROR_FAIL;
+            }
+
+            Node<T>* tempnode = m_head;
+
+            if (m_head->m_next == m_tail) {
+                m_head = m_tail;
+                m_tail = tempnode;
+                m_head->m_next = m_tail;
+                m_tail->m_next = nullptr;
+            }
+            else {
+                Node<T>* curr = m_head;
+                while (curr->m_next != m_tail) {
+                    curr = curr->m_next;
+                }
+
+                m_head = m_tail;
+                m_tail = tempnode;
+
+                m_head->m_next = m_tail->m_next;
+                curr->m_next = m_tail;
+                m_tail->m_next = nullptr;
+            }
+
+            return ERROR_PASS;
+        }
         friend std::ostream& operator<<(std::ostream& os, SinglyLinkedList<T>& LL) {
             os << '[';
             if (LL.m_size != 0) {
@@ -1069,6 +1098,34 @@ namespace nimso {
             }
 
             return ERROR_FAIL;
+        }
+        e_ErrorState swapEnds() {
+            if (m_size == 0 || m_head == m_tail) {
+                return ERROR_FAIL;
+            }
+
+            DoublyNode<T>* tempnode = m_head;
+
+            if (m_head->m_next == m_tail) {
+                m_head = m_tail;
+                m_tail = tempnode;
+                m_head->m_next = m_tail;
+                m_head->m_prev = nullptr;
+                m_tail->m_prev = m_head;
+                m_tail->m_next = nullptr;
+            }
+            else {
+                m_head->m_prev = m_tail->m_prev;
+                m_tail->m_next = m_head->m_next;
+                m_head->m_next = nullptr;
+                m_tail->m_prev = nullptr;
+                m_head->m_prev->m_next = m_head;
+                m_tail->m_next->m_prev = m_tail;
+                m_head = m_tail;
+                m_tail = tempnode;
+            }
+
+            return ERROR_PASS;
         }
         friend std::ostream& operator<<(std::ostream& os, DoublyLinkedList<T>& LL) {
             os << '[';
