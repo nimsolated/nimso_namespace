@@ -18,6 +18,17 @@ namespace nimso {
         }
     }
 
+    template <typename Variant>
+    void display(Variant&& item) {
+        try {
+            std::cout << item << std::endl;
+        }
+        catch (...) {
+            std::cout << "Unknown error in display(item) function. Does the item parameter have an operator<< overload?" << std::endl;
+            return;
+        }
+    }
+
     template <typename T>
     long long seqSearch(const T arr[], const T& target, const size_t& arr_size) {
         for (size_t i = 0; i < arr_size; i++) {

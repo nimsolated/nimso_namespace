@@ -1,4 +1,5 @@
 #include "nimso.h"
+#include <string>
 
 int main()
 {
@@ -12,4 +13,9 @@ int main()
 	nimso::display(nimso::seqSearch(arr, 9, N));
 	nimso::display(nimso::seqSearch(arr, 6, N));
 	nimso::display(nimso::seqSearch(arr, 3, N));
+	
+	int num = 16;
+	if (nimso::binarySearch(arr, 0, N - 1, num) == nimso::ERROR_FAIL) {
+		nimso::display(std::to_string(num) + " was not found in arr[].");
+	}
 }
