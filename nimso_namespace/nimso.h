@@ -7,6 +7,66 @@ namespace nimso {
 
     enum e_ErrorState { ERROR_FAIL = -1, ERROR_PASS = 0 };
 
+    template <typename Variant>
+    void display(const Variant& item) {
+        try {
+            std::cout << item << std::endl;
+        }
+        catch (...) {
+            std::cout << "Unknown error in display(item) function. Does the item parameter have an operator<< overload?" << std::endl;
+            return;
+        }
+    }
+
+    template <typename T>
+    long long seqSearch(const T arr[], const T& target, const size_t& arr_size) {
+        for (size_t i = 0; i < arr_size; i++) {
+            if (arr[i] == target) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    template <typename T>
+    long long binarySearch(const T arr[], size_t low, size_t high, const T& target) {
+        while (high >= low) {
+            size_t mid = low + (high - low) / 2;
+
+            if (arr[mid] == target) {
+                return mid;
+            }
+            else if (arr[mid] < target) {
+                low = mid + 1;
+            }
+            else if (arr[mid] > target) {
+                high = mid - 1;
+            }
+        }
+
+        return -1;
+    }
+
+    template <typename T>
+    long long binarySearchRecursive(const T arr[], size_t low, size_t high, const T& target) {
+        if (low > high) {
+            return -1;
+        }
+
+        size_t mid = low + (high - low) / 2;
+
+        if (arr[mid] == target) {
+            return mid;
+        }
+        else if (arr[mid] < target) {
+            return nimso::binarySearchRecursive(arr, mid + 1, high, target);
+        }
+        else {
+            return nimso::binarySearchRecursive(arr, low, mid - 1, target);
+        }
+    }
+
     class TowerOfHanoi {
     private:
         size_t m_numMoves;
