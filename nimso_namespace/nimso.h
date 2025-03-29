@@ -126,8 +126,8 @@ namespace nimso {
         Variant m_data;
 
         Node() = default;
-        Node(const Variant& data) : m_data(data) {}
-        Node(Variant&& data) : m_data(data) {}
+        Node(const Variant& data, Node<Variant>* next = nullptr) : m_data(data), m_next(next) {}
+        Node(Variant&& data, Node<Variant>* next = nullptr) : m_data(data), m_next(next) {}
         template <typename... Args>
         Node(Args&&... args) : m_data(std::forward<Args>(args)...) {}
     };
@@ -139,8 +139,10 @@ namespace nimso {
         Variant m_data;
 
         DoublyNode() = default;
-        DoublyNode(const Variant& data) : m_data(data) {}
-        DoublyNode(Variant&& data) : m_data(data) {}
+        DoublyNode(const Variant& data, DoublyNode<Variant>* prev = nullptr, DoublyNode<Variant>* next = nullptr)
+            : m_data(data), m_prev(prev), m_next(next) {}
+        DoublyNode(Variant&& data, DoublyNode<Variant>* prev = nullptr, DoublyNode<Variant>* next = nullptr)
+            : m_data(data), m_prev(prev), m_next(next) {}
         template <typename... Args>
         DoublyNode(Args&&... args) : m_data(std::forward<Args>(args)...) {}
     };
@@ -423,7 +425,16 @@ namespace nimso {
         Node<T>* m_head;
         Node<T>* m_tail;
     public:
-        SinglyLinkedList() : m_size(0), m_head(nullptr), m_tail(nullptr) {};
+        SinglyLinkedList() : m_size(0), m_head(nullptr), m_tail(nullptr) {}
+        SinglyLinkedList(Node<T>* head) : m_head(head) {
+            m_size = 1;
+            Node<T>* curr = m_head;
+            while (curr->m_next) {
+                curr = curr->m_next;
+                m_size++;
+            }
+            m_tail = curr;
+        }
         ~SinglyLinkedList() {
             if (m_size == 0) {
                 return;
@@ -828,6 +839,15 @@ namespace nimso {
         DoublyNode<T>* m_tail;
     public:
         DoublyLinkedList() : m_size(0), m_head(nullptr), m_tail(nullptr) {};
+        DoublyLinkedList(DoublyNode<T>* head) : m_head(head) {
+            m_size = 1;
+            DoublyNode<T>* curr = m_head;
+            while (curr->m_next) {
+                curr = curr->m_next;
+                m_size++;
+            }
+            m_tail = curr;
+        }
         ~DoublyLinkedList() {
             if (m_size == 0) {
                 return;
