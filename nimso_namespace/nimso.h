@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <cstdlib>
 #include <Windows.h>
 #include <unordered_map>
 
@@ -11,112 +12,6 @@ namespace nimso {
     bool isKeyPressed(int key) {
         return (GetAsyncKeyState(key) & 0x8000) != 0;
     }
-
-    struct Vector2 {
-        int x;
-        int y;
-
-        Vector2() : x(0), y(0) {}
-        Vector2(const int& _x, const int& _y) : x(_x), y(_y) {}
-
-        bool operator==(const Vector2& other) {
-            return (this->x == other.x && this->y == other.y);
-        }
-        bool operator>(const Vector2& other) {
-            return (this->x > other.x || this->y > other.y);
-        }
-        bool operator<(const Vector2& other) {
-            return (this->x < other.x || this->y < other.y);
-        }
-        friend std::ostream& operator<<(std::ostream& os, const Vector2& vec) {
-            os << '(' << vec.x << ", " << vec.y << ')';
-            return os;
-        }
-    };
-
-    class FreeRoam {
-    private:
-        Vector2 position;
-        Vector2 border;
-        char playerChar;
-        bool done;
-
-        void drawCurrState() const {
-            system("cls");
-
-            for (int i = 0; i < position.y; i++) {
-                std::cout << std::endl;
-            }
-            for (int i = 0; i < position.x; i++) {
-                std::cout << ' ';
-            }
-
-            std::cout << playerChar << std::endl;
-        }
-        void checkForKey() {
-            if ((isKeyPressed(VK_UP) || isKeyPressed(87)) && position.y > 0) {
-                position.y--;
-                drawCurrState();
-            }
-            else if ((isKeyPressed(VK_DOWN) || isKeyPressed(83)) && position.y < border.y) {
-                position.y++;
-                drawCurrState();
-            }
-            if ((isKeyPressed(VK_LEFT) || isKeyPressed(65)) && position.x > 0) {
-                position.x--;
-                drawCurrState();
-            }
-            else if ((isKeyPressed(VK_RIGHT) || isKeyPressed(68)) && position.x < border.x) {
-                position.x++;
-                drawCurrState();
-            }
-            else if (isKeyPressed(113)) {
-                done = true;
-            }
-            else if (isKeyPressed(81)) {
-                done = true;
-            }
-        }
-    public:
-        FreeRoam(const char& _playerCharacter = static_cast<char>(254), const Vector2& _startPos = Vector2(), const Vector2& _initialBorder = Vector2(50, 25))
-            : position(_startPos), border(_initialBorder), playerChar(_playerCharacter), done(false) {}
-
-        void setPos(const Vector2& newPos) {
-            position = newPos;
-        }
-        void setBorder(const Vector2& newBorder) {
-            border = newBorder;
-        }
-        void setPlayerChar(const char& newPlayerChar) {
-            playerChar = newPlayerChar;
-        }
-        Vector2 getPos() const {
-            return position;
-        }
-        Vector2 getBorder() const {
-            return border;
-        }
-        char getPlayerChar() const {
-            return playerChar;
-        }
-
-        int run() {
-            if (position > border) {
-                std::cout << "Starting position must *not* be outside of the border." << std::endl;
-                return -1;
-            }
-
-            system("cls");
-            drawCurrState();
-            while (!done) {
-                checkForKey();
-                Sleep(50);
-            }
-            system("cls");
-            std::cout << "FreeRoam session ended!\n";
-            return 0;
-        }
-    };
 
     template <typename Variant>
     void display(const Variant& item) {
@@ -188,6 +83,247 @@ namespace nimso {
             return nimso::binarySearchRecursive(arr, low, mid - 1, target);
         }
     }
+
+    template <typename T>
+    class Array {
+    private:
+        T* m_arr;
+        size_t m_size;
+    public:
+        Array(const size_t& initSize) : m_arr(nullptr), m_size(initSize) {
+            try {
+                if (m_size < 1) {
+                    throw std::runtime_error("Array must have a size greater than 0.");
+                }
+                m_arr = new T[m_size]();
+            }
+            catch (std::runtime_error& e) {
+                std::cout << e.what() << std::endl;
+            }
+            catch (...) {
+                std::cout << "Unknown error occured while constructing an Array class object.\n" << std::endl;
+            }
+        }
+        ~Array() {
+            delete[] m_arr;
+        }
+
+        size_t size() const {
+            return m_size;
+        }
+        e_ErrorState resize(const size_t& newSize) {
+            T* temp = new T[newSize]();
+            if (newSize < m_size) {
+                for (size_t i = 0; i < newSize; i++) {
+                    temp[i] = m_arr[i];
+                }
+                delete[] m_arr;
+                m_arr = temp;
+                m_size = newSize;
+                return ERROR_PASS;
+            }
+            else if (newSize > m_size) {
+                for (size_t i = 0; i < m_size; i++) {
+                    temp[i] = m_arr[i];
+                }
+                delete[] m_arr;
+                m_arr = temp;
+                m_size = newSize;
+                return ERROR_PASS;
+            }
+            else {
+                return ERROR_FAIL;
+            }
+        }
+
+        e_ErrorState swap(Array<T>& other) {
+            if (this == &other) {
+                return ERROR_FAIL;
+            }
+
+            T* temp_arr = this->m_arr;
+            this->m_arr = other.m_arr;
+            other.m_arr = temp_arr;
+            size_t temp_sizet = this->m_size;
+            this->m_size = other.m_size;
+            other.m_size = temp_sizet;
+            return ERROR_PASS;
+        }
+        e_ErrorState swapElements(const size_t& i, const size_t& j) {
+            if (i < 0 || j < 0 || i >= m_size || j >= m_size || i == j) {
+                return ERROR_FAIL;
+            }
+
+            T temp = m_arr[i];
+            m_arr[i] = m_arr[j];
+            m_arr[j] = temp;
+            return ERROR_PASS;
+        }
+        
+        const T& operator[](const size_t& i) const {
+            try {
+                if (i >= m_size) {
+                    throw std::out_of_range("Tried to access an out of range Array element.");
+                }
+            }
+            catch (std::out_of_range& e) {
+                std::cout << e.what() << std::endl;
+            }
+
+            return m_arr[i];
+        }
+        T& operator[](const size_t& i) {
+            try {
+                if (i >= m_size) {
+                    throw std::out_of_range("Tried to access an out of range Array element.");
+                }
+            }
+            catch (std::out_of_range& e) {
+                std::cout << e.what() << std::endl;
+            }
+
+            return m_arr[i];
+        }
+        const T& at(const size_t& i) const {
+            try {
+                if (i >= m_size) {
+                    throw std::out_of_range("Tried to access an out of range Array element.");
+                }
+            }
+            catch (std::out_of_range& e) {
+                std::cout << e.what() << std::endl;
+            }
+
+            return m_arr[i];
+        }
+        T& at(const size_t& i) {
+            try {
+                if (i >= m_size) {
+                    throw std::out_of_range("Tried to access an out of range Array element.");
+                }
+            }
+            catch (std::out_of_range& e) {
+                std::cout << e.what() << std::endl;
+            }
+
+            return m_arr[i];
+        }
+        friend std::ostream& operator<<(std::ostream& os, const Array<T>& a) {
+            os << '[';
+            for (size_t i = 0; i < (a.size() - 1); i++) {
+                os << a[i] << ", ";
+            }
+            os << a[a.size() - 1] << ']';
+            return os;
+        }
+    };
+
+    struct Vector2 {
+        int x;
+        int y;
+
+        Vector2() : x(0), y(0) {}
+        Vector2(const int& _x, const int& _y) : x(_x), y(_y) {}
+
+        bool operator==(const Vector2& other) {
+            return (this->x == other.x && this->y == other.y);
+        }
+        bool operator>(const Vector2& other) {
+            return (this->x > other.x || this->y > other.y);
+        }
+        bool operator<(const Vector2& other) {
+            return (this->x < other.x || this->y < other.y);
+        }
+        friend std::ostream& operator<<(std::ostream& os, const Vector2& vec) {
+            os << '(' << vec.x << ", " << vec.y << ')';
+            return os;
+        }
+    };
+
+    class FreeRoam {
+    private:
+        Vector2 position;
+        Vector2 border;
+        char playerChar;
+        bool done;
+
+        void drawCurrState() const {
+            system("cls");
+
+            for (int i = 0; i < position.y; i++) {
+                std::cout << std::endl;
+            }
+            for (int i = 0; i < position.x; i++) {
+                std::cout << ' ';
+            }
+
+            std::cout << playerChar << std::endl;
+        }
+        void checkForKey() {
+            if ((isKeyPressed(VK_UP) || isKeyPressed(87)) && position.y > 0) {
+                position.y--;
+                drawCurrState();
+            }
+            else if ((isKeyPressed(VK_DOWN) || isKeyPressed(83)) && position.y < border.y) {
+                position.y++;
+                drawCurrState();
+            }
+            if ((isKeyPressed(VK_LEFT) || isKeyPressed(65)) && position.x > 0) {
+                position.x--;
+                drawCurrState();
+            }
+            else if ((isKeyPressed(VK_RIGHT) || isKeyPressed(68)) && position.x < border.x) {
+                position.x++;
+                drawCurrState();
+            }
+            else if (isKeyPressed(113)) {
+                done = true;
+            }
+            else if (isKeyPressed(81)) {
+                done = true;
+            }
+        }
+    public:
+        FreeRoam(const char& _playerCharacter = static_cast<char>(254), const Vector2& _startPos = Vector2(), const Vector2& _initialBorder = Vector2(50, 25))
+            : position(_startPos), border(_initialBorder), playerChar(_playerCharacter), done(false) {
+        }
+
+        void setPos(const Vector2& newPos) {
+            position = newPos;
+        }
+        void setBorder(const Vector2& newBorder) {
+            border = newBorder;
+        }
+        void setPlayerChar(const char& newPlayerChar) {
+            playerChar = newPlayerChar;
+        }
+        Vector2 getPos() const {
+            return position;
+        }
+        Vector2 getBorder() const {
+            return border;
+        }
+        char getPlayerChar() const {
+            return playerChar;
+        }
+
+        int run() {
+            if (position > border) {
+                std::cout << "Starting position must *not* be outside of the border." << std::endl;
+                return -1;
+            }
+
+            system("cls");
+            drawCurrState();
+            while (!done) {
+                checkForKey();
+                Sleep(50);
+            }
+            system("cls");
+            std::cout << "FreeRoam session ended!\n";
+            return 0;
+        }
+    };
 
     class TowerOfHanoi {
     private:
