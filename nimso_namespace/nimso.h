@@ -1,11 +1,122 @@
 #pragma once
 #include <iostream>
+#include <Windows.h>
 #include <unordered_map>
 
 namespace nimso {
     enum e_InsertionRules { INSERT_BEFORE = 0, INSERT_AFTER = 1 };
 
     enum e_ErrorState { ERROR_FAIL = -1, ERROR_PASS = 0 };
+    
+    bool isKeyPressed(int key) {
+        return (GetAsyncKeyState(key) & 0x8000) != 0;
+    }
+
+    struct Vector2 {
+        int x;
+        int y;
+
+        Vector2() : x(0), y(0) {}
+        Vector2(const int& _x, const int& _y) : x(_x), y(_y) {}
+
+        bool operator==(const Vector2& other) {
+            return (this->x == other.x && this->y == other.y);
+        }
+        bool operator>(const Vector2& other) {
+            return (this->x > other.x || this->y > other.y);
+        }
+        bool operator<(const Vector2& other) {
+            return (this->x < other.x || this->y < other.y);
+        }
+        friend std::ostream& operator<<(std::ostream& os, const Vector2& vec) {
+            os << '(' << vec.x << ", " << vec.y << ')';
+            return os;
+        }
+    };
+
+    class FreeRoam {
+    private:
+        Vector2 position;
+        Vector2 border;
+        char playerChar;
+        bool done;
+
+        void drawCurrState() const {
+            system("cls");
+
+            for (int i = 0; i < position.y; i++) {
+                std::cout << std::endl;
+            }
+            for (int i = 0; i < position.x; i++) {
+                std::cout << ' ';
+            }
+
+            std::cout << playerChar << std::endl;
+        }
+        void checkForKey() {
+            if ((isKeyPressed(VK_UP) || isKeyPressed(87)) && position.y > 0) {
+                position.y--;
+                drawCurrState();
+            }
+            else if ((isKeyPressed(VK_DOWN) || isKeyPressed(83)) && position.y < border.y) {
+                position.y++;
+                drawCurrState();
+            }
+            if ((isKeyPressed(VK_LEFT) || isKeyPressed(65)) && position.x > 0) {
+                position.x--;
+                drawCurrState();
+            }
+            else if ((isKeyPressed(VK_RIGHT) || isKeyPressed(68)) && position.x < border.x) {
+                position.x++;
+                drawCurrState();
+            }
+            else if (isKeyPressed(113)) {
+                done = true;
+            }
+            else if (isKeyPressed(81)) {
+                done = true;
+            }
+        }
+    public:
+        FreeRoam(const char& _playerCharacter = static_cast<char>(254), const Vector2& _startPos = Vector2(), const Vector2& _initialBorder = Vector2(50, 25))
+            : position(_startPos), border(_initialBorder), playerChar(_playerCharacter), done(false) {}
+
+        void setPos(const Vector2& newPos) {
+            position = newPos;
+        }
+        void setBorder(const Vector2& newBorder) {
+            border = newBorder;
+        }
+        void setPlayerChar(const char& newPlayerChar) {
+            playerChar = newPlayerChar;
+        }
+        Vector2 getPos() const {
+            return position;
+        }
+        Vector2 getBorder() const {
+            return border;
+        }
+        char getPlayerChar() const {
+            return playerChar;
+        }
+
+        int run() {
+            if (position > border) {
+                std::cout << "Starting position must *not* be outside of the border." << std::endl;
+                return -1;
+            }
+
+            system("cls");
+            drawCurrState();
+            while (!done) {
+                checkForKey();
+                Sleep(50);
+            }
+            system("cls");
+            std::cout << "FreeRoam session ended!\n";
+            return 0;
+        }
+    };
 
     template <typename Variant>
     void display(const Variant& item) {
