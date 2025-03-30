@@ -104,6 +104,31 @@ namespace nimso {
                 std::cout << "Unknown error occured while constructing an Array class object.\n" << std::endl;
             }
         }
+        Array(const Array<T>& other) : Array(1) {
+            if (this == &other) {
+                std::cout << "Array: self-reference assignment error." << std::endl;
+                return;
+            }
+
+            this->m_arr = new T[other.m_size];
+            this->m_size = other.m_size;
+            for (size_t i = 0; i < other.m_size; i++) {
+                this->m_arr[i] = other.m_arr[i];
+            }
+        }
+        Array<T>& operator=(const Array<T>& other) {
+            if (this == &other) {
+                std::cout << "Array: self-reference assignment error." << std::endl;
+                return *this;
+            }
+
+            this->m_arr = new T[other.m_size];
+            this->m_size = other.m_size;
+            for (size_t i = 0; i < other.m_size; i++) {
+                this->m_arr[i] = other.m_arr[i];
+            }
+            return *this;
+        }
         ~Array() {
             delete[] m_arr;
         }

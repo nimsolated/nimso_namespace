@@ -37,4 +37,12 @@ int main()
 	std::cout << "myArray: " << myArray << std::endl;
 	std::cout << mySecondArray.size() << std::endl;
 	std::cout << "mySecondArray: " << mySecondArray << std::endl;
+
+	nimso::Array<int> copyOfMyArray(myArray);
+	std::cout << copyOfMyArray.size() << std::endl;
+	std::cout << "Copy of myArray: " << copyOfMyArray << std::endl;
+
+	nimso::Array<int> anotherCopyOfMyArray = copyOfMyArray;
+	std::cout << anotherCopyOfMyArray.size() << std::endl;
+	std::cout << "Another copy of myArray: " << anotherCopyOfMyArray << std::endl;
 }
