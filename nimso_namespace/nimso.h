@@ -1,8 +1,8 @@
 #pragma once
 #include <iostream>
 #include <cstdlib>
-#include <Windows.h>
 #include <unordered_map>
+#include <Windows.h>
 
 namespace nimso {
     enum e_InsertionRules { INSERT_BEFORE = 0, INSERT_AFTER = 1 };
@@ -92,7 +92,7 @@ namespace nimso {
     public:
         Array(const size_t& initSize) : m_arr(nullptr), m_size(initSize) {
             try {
-                if (m_size < 1) {
+                if (m_size < 0) {
                     throw std::runtime_error("Array must have a size greater than 0.");
                 }
                 m_arr = new T[m_size]();
@@ -104,7 +104,7 @@ namespace nimso {
                 std::cout << "Unknown error occured while constructing an Array class object.\n" << std::endl;
             }
         }
-        Array(const Array<T>& other) : Array(1) {
+        Array(const Array<T>& other) : Array(0) {
             if (this == &other) {
                 std::cout << "Array: self-reference assignment error." << std::endl;
                 return;
@@ -160,6 +160,25 @@ namespace nimso {
                 return ERROR_FAIL;
             }
         }
+        e_ErrorState deleteElement(const size_t& pos) {
+            if (m_size < 1 || pos >= m_size) {
+                return ERROR_FAIL;
+            }
+
+            T* temp = new T[m_size - 1]();
+            int offset = 0;
+            for (size_t i = 0; i < m_size; i++) {
+                if (i == pos) {
+                    offset = (i == pos);
+                    continue;
+                }
+                temp[i - offset] = m_arr[i];
+            }
+            delete[] m_arr;
+            m_arr = temp;
+            m_size--;
+            return ERROR_PASS;
+        }
 
         e_ErrorState swap(Array<T>& other) {
             if (this == &other) {
@@ -187,58 +206,59 @@ namespace nimso {
         
         const T& operator[](const size_t& i) const {
             try {
-                if (i >= m_size) {
-                    throw std::out_of_range("Tried to access an out of range Array element.");
+                if (i < 0 || i >= m_size) {
+                    throw std::out_of_range("Tried to access an out of range Array element. This can result in undefined behavior.");
                 }
             }
             catch (std::out_of_range& e) {
                 std::cout << e.what() << std::endl;
             }
-
             return m_arr[i];
         }
         T& operator[](const size_t& i) {
             try {
-                if (i >= m_size) {
-                    throw std::out_of_range("Tried to access an out of range Array element.");
+                if (i < 0 || i >= m_size) {
+                    throw std::out_of_range("Tried to access an out of range Array element. This can result in undefined behavior.");
                 }
             }
             catch (std::out_of_range& e) {
                 std::cout << e.what() << std::endl;
             }
-
             return m_arr[i];
         }
         const T& at(const size_t& i) const {
             try {
-                if (i >= m_size) {
-                    throw std::out_of_range("Tried to access an out of range Array element.");
+                if (i < 0 || i >= m_size) {
+                    throw std::out_of_range("Tried to access an out of range Array element. This can result in undefined behavior.");
                 }
             }
             catch (std::out_of_range& e) {
                 std::cout << e.what() << std::endl;
             }
-
             return m_arr[i];
         }
         T& at(const size_t& i) {
             try {
-                if (i >= m_size) {
-                    throw std::out_of_range("Tried to access an out of range Array element.");
+                if (i < 0 || i >= m_size) {
+                    throw std::out_of_range("Tried to access an out of range Array element. This can result in undefined behavior.");
                 }
             }
             catch (std::out_of_range& e) {
                 std::cout << e.what() << std::endl;
             }
-
             return m_arr[i];
         }
         friend std::ostream& operator<<(std::ostream& os, const Array<T>& a) {
             os << '[';
-            for (size_t i = 0; i < (a.size() - 1); i++) {
-                os << a[i] << ", ";
+            if (a.size() > 0) {
+                for (size_t i = 0; i < (a.size() - 1); i++) {
+                    os << a[i] << ", ";
+                }
+                os << a[a.size() - 1] << ']';
             }
-            os << a[a.size() - 1] << ']';
+            else {
+                os << ']';
+            }
             return os;
         }
     };
@@ -1581,15 +1601,77 @@ namespace nimso {
         }
     };
 
-    // TODO: implement Plate class
 	template <typename T>
-	class Plate {
-        // TODO: implement Plate class
+	class Dish {
+    protected:
+        Array<T>* m_contents;
+    public:
+        Dish(const Array<T>& fromArr) : m_contents(new Array<T>(fromArr)) {}
+        Dish(const Dish<T>& other) : m_contents(nullptr) {
+            if (this == &other) {
+                std::cout << "Dish: self-reference assignment error." << std::endl;
+                return;
+            }
+            m_contents = new Array<T>(other.getContents());
+        }
+        Dish<T>& operator=(const Dish<T>& other) {
+            if (this == &other) {
+                std::cout << "Dish: self-reference assignment error." << std::endl;
+                return *this;
+            }
+            m_contents = new Array<T>(other.getContents());
+            return *this;
+        }
+        ~Dish() {
+            delete m_contents;
+        }
+
+        const Array<T>& getContents() const {
+            return *m_contents;
+        }
+        T eat() {
+            size_t randomPos = rand() % m_contents->size();
+            T r = m_contents->at(randomPos);
+            m_contents->deleteElement(randomPos);
+            return r;
+        }
+        e_ErrorState serve(const Array<T>& arr) const {
+            try {
+                *m_contents = arr;
+                return ERROR_PASS;
+            }
+            catch (...) {
+                std::cout << "Dish: cannot serve the given Array." << std::endl;
+                return ERROR_FAIL;
+            }
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, Dish<T>& d) {
+            os << d.getContents();
+            return os;
+        }
 	};
 
-    // TODO: implement Bowl class (inherits from Plate class)
 	template <typename T>
-	class Bowl : public Plate<T> {
-        // TODO: implement Bowl class (inherits from Plate class)
+	class Bowl : public Dish<T> {
+    public:
+        using Dish<T>::Dish;
+        
+        void mix() {
+            try {
+                for (size_t i = this->m_contents->size() - 1; i > 0; i--) {
+                    this->m_contents->at(i - 1) = this->m_contents->at(i - 1) + this->m_contents->at(i);
+                    this->m_contents->deleteElement(i);
+                }
+            }
+            catch (...) {
+                std::cout << "Unknown error occured while mixing a Bowl." << std::endl;
+                return;
+            }
+        }
+        friend std::ostream& operator<<(std::ostream& os, const Bowl<T>& b) {
+            os << b.getContents();
+            return os;
+        }
 	};
 }
