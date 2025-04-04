@@ -1103,6 +1103,37 @@ namespace nimso {
 
             return ERROR_PASS;
         }
+        e_ErrorState split(SinglyLinkedList<T>& other) {
+            if (!m_head) {
+                return ERROR_FAIL;
+            }
+            if (!m_head->m_next) {
+                return ERROR_FAIL;
+            }
+
+            Node<T>* slowCurr = m_head;
+            Node<T>* fastCurr = m_head;
+            while (fastCurr && fastCurr->m_next && fastCurr->m_next->m_next) {
+                slowCurr = slowCurr->m_next;
+                fastCurr = fastCurr->m_next->m_next;
+            }
+
+            other.m_head = slowCurr->m_next;
+            slowCurr->m_next = nullptr;
+            other.m_tail = this->m_tail;
+            this->m_tail = slowCurr;
+
+            if (this->m_size % 2 == 0) {
+                this->m_size /= 2;
+                other.m_size = this->m_size;
+            }
+            else {
+                this->m_size = (this->m_size / 2) + 1;
+                other.m_size = this->m_size - 1;
+            }
+
+            return ERROR_PASS;
+        }
         friend std::ostream& operator<<(std::ostream& os, SinglyLinkedList<T>& LL) {
             os << '[';
             if (LL.m_size != 0) {
@@ -1506,6 +1537,38 @@ namespace nimso {
                 m_tail->m_next->m_prev = m_tail;
                 m_head = m_tail;
                 m_tail = tempnode;
+            }
+
+            return ERROR_PASS;
+        }
+        e_ErrorState split(DoublyLinkedList<T>& other) {
+            if (!m_head) {
+                return ERROR_FAIL;
+            }
+            if (!m_head->m_next) {
+                return ERROR_FAIL;
+            }
+
+            DoublyNode<T>* slowCurr = m_head;
+            DoublyNode<T>* fastCurr = m_head;
+            while (fastCurr && fastCurr->m_next && fastCurr->m_next->m_next) {
+                slowCurr = slowCurr->m_next;
+                fastCurr = fastCurr->m_next->m_next;
+            }
+
+            other.m_head = slowCurr->m_next;
+            slowCurr->m_next->m_prev = nullptr;
+            slowCurr->m_next = nullptr;
+            other.m_tail = this->m_tail;
+            this->m_tail = slowCurr;
+
+            if (this->m_size % 2 == 0) {
+                this->m_size /= 2;
+                other.m_size = this->m_size;
+            }
+            else {
+                this->m_size = (this->m_size / 2) + 1;
+                other.m_size = this->m_size - 1;
             }
 
             return ERROR_PASS;

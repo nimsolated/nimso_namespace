@@ -2,47 +2,28 @@
 
 int main()
 {
-	srand((unsigned int)time(0));
+	nimso::DoublyLinkedList<int> list1;
+	nimso::DoublyLinkedList<int> list2;
 
-	nimso::Array<int> arr(5);
-	for (size_t i = 0; i < arr.size(); i++) {
-		arr[i] = (int)((i + 1) * 2);
+	list1.emplaceBack(3);
+	list1.emplaceBack(6);
+	list1.emplaceBack(9);
+	list1.emplaceBack(12);
+	list1.emplaceBack(15);
+
+	std::cout << list1 << std::endl;
+	std::cout << list2 << std::endl;
+	list1.split(list2);
+	std::cout << list1 << std::endl;
+	std::cout << list2 << std::endl;
+
+	nimso::DoublyLinkedList<int> list3;
+	list1.split(list3);
+	std::cout << list1 << std::endl;
+	std::cout << list3 << std::endl;
+
+	nimso::DoublyLinkedList<int> list4;
+	if (list3.split(list4) == nimso::ERROR_FAIL) {
+		nimso::display("Nonono!");
 	}
-	nimso::Dish<int> dish(arr);
-	std::cout << dish << std::endl;
-	std::cout << dish.eat() << std::endl;
-	std::cout << dish << std::endl;
-	std::cout << dish.eat() << std::endl;
-	std::cout << dish << std::endl;
-	dish.serve(arr);
-	std::cout << dish << std::endl;
-	std::cout << dish.eat() << std::endl;
-	std::cout << dish << std::endl;
-	std::cout << dish.eat() << std::endl;
-	std::cout << dish << std::endl;
-	dish.serve(arr);
-	std::cout << dish << std::endl;
-	std::cout << dish.eat() << std::endl;
-	std::cout << dish.eat() << std::endl;
-	std::cout << dish.eat() << std::endl;
-	std::cout << dish.eat() << std::endl;
-	std::cout << dish << std::endl;
-	std::cout << dish.eat() << std::endl;
-	std::cout << dish << std::endl;
-	nimso::Array<int> arr2(10);
-	for (size_t i = 0; i < arr2.size(); i++) {
-		arr2[i] = (int)(i + 1);
-	}
-	dish.serve(arr2);
-	std::cout << dish << std::endl;
-
-	nimso::Bowl<int> bowl(arr2);
-	nimso::Bowl<int> bowl2 = bowl;
-	std::cout << bowl << std::endl;
-	bowl.mix();
-	std::cout << bowl << std::endl;
-
-	std::cout << bowl2 << std::endl;
-	bowl2.mix();
-	std::cout << bowl2 << std::endl;
 }
